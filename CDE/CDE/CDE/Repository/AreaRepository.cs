@@ -1,6 +1,9 @@
 ﻿using CDE.DBContexts;
 using CDE.Models;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Graph.Models;
+using Microsoft.Graph.Models.Security;
+using System.Linq;
 
 namespace CDE.Repository
 {
@@ -12,9 +15,107 @@ namespace CDE.Repository
         {
             _context = context;
         }
+        public async Task<IEnumerable<UserWithRoles>> GetUsersAsync(string search)
+        {
+            var query = _context.Users.AsQueryable();
+
+            // Kiểm tra nếu có search input, tìm theo tên người dùng hoặc email
+            if (!string.IsNullOrWhiteSpace(search))
+            {
+                query = query.Where(u => u.UserName.Contains(search) || u.Email.Contains(search));
+            }
+
+            
+            var usersWithRoles = await (from user in query
+                                        join userRole in _context.UserRoles on user.Id equals userRole.UserId
+                                        join role in _context.Roles on userRole.RoleId equals role.Id
+                                        select new UserWithRoles
+                                        {
+                                            UserName = user.UserName,
+                                            Email = user.Email,
+                                            Roles = string.Join(", ", new[] { role.Name }) // Chỉ lấy tên role
+                                        }).ToListAsync();
+
+            return usersWithRoles;
+        }
+
+
+        public async Task<bool> AssignUserToArea(string userId, int areaId)
+        {
+            var user = await _context.Users.FirstOrDefaultAsync(u => u.Id == userId);
+
+            var area = await _context.AreaLists.FirstOrDefaultAsync(a => a.AreaCode == areaId);
+
+            if (user == null || area == null)
+            {
+                return false;
+            }
+
+            area.UserId = userId; 
+
+            await _context.SaveChangesAsync();
+            return true;
+        }
+
+        public async Task<IEnumerable<UserWithRoles>> GetUsersByAreaIdAsync(string areaName)
+        {
+            var userIdsInArea = await _context.AreaLists
+                .Where(a => a.AreaName == areaName)  
+                .Select(a => a.UserId)  
+                .ToListAsync();
+
+            var usersWithRoles = await (from user in _context.Users
+                                        where userIdsInArea.Contains(user.Id)  
+                                        join userRole in _context.UserRoles on user.Id equals userRole.UserId
+                                        join role in _context.Roles on userRole.RoleId equals role.Id
+                                        select new UserWithRoles
+                                        {
+                                            UserName = user.UserName,
+                                            Email = user.Email,
+                                            Roles = string.Join(", ", _context.Roles
+                                                                      .Where(r => userRole.RoleId == r.Id)
+                                                                      .Select(r => r.Name))
+                                        }).ToListAsync();
+
+            return usersWithRoles;
+        }
+
+        public async Task<bool> RemoveUserFromArea(string userId, int areaId)
+        {
+            var user = await _context.Users.FirstOrDefaultAsync(u => u.Id == userId);
+
+            var areaListEntry = await _context.AreaLists
+                .FirstOrDefaultAsync(al => al.UserId == userId && al.AreaCode == areaId); 
+
+            if (areaListEntry != null)
+            {
+                _context.AreaLists.Remove(areaListEntry);
+            }
+            await _context.SaveChangesAsync();
+
+            return true;
+        }
+
+
+        //public async Task<User?> CreateUserAsync(User user)
+        //{
+        //    _context.Users.Add(user);
+        //    await _context.SaveChangesAsync();
+        //    return user;
+        //}
+
+        //public async Task<IEnumerable<User>> GetUsersByAreaIdAsync(int areaId)
+        //{
+        //    return await _context.Users.Where(u => u.AreaId == areaId).ToListAsync();
+        //}
+
+        //public async Task<IEnumerable<User>> GetAllUsersAsync()
+        //{
+        //    return await _context.Users.ToListAsync();
+        //}
         public async Task<IEnumerable<Area>> GetAllAreasAsync()
         {
-            return await _context.AreaLists.ToListAsync();  // Lấy tất cả các Area từ cơ sở dữ liệu
+            return await _context.AreaLists.ToListAsync();  
         }
         public async Task<IEnumerable<Area>> GetAreasAsync(string search, string sortBy, bool ascending)
         {

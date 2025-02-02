@@ -1,9 +1,18 @@
 ﻿using CDE.Models;
+using Microsoft.Graph.Models;
 
 namespace CDE.Repository
 {
     public interface IAreaRepository
     {
+ 
+        Task<bool> RemoveUserFromArea(string userId, int areaId);
+        //Task<User?> CreateUserAsync(User user);  
+        //Task<IEnumerable<User>> GetAllUsersAsync(); 
+        Task<IEnumerable<UserWithRoles>> GetUsersAsync(string search);
+        Task<bool> AssignUserToArea(string userId, int areaId);
+        Task<IEnumerable<UserWithRoles>> GetUsersByAreaIdAsync(string areaName);
+
         Task<IEnumerable<Area>> GetAllAreasAsync();
         Task<IEnumerable<Area>> GetAreasAsync(string search, string sortBy, bool ascending);
         Task<Area> GetAreaByIdAsync(int id);

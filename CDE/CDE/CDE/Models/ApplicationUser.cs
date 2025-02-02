@@ -7,5 +7,6 @@ namespace CDE.Models
         public string? RefreshToken { get; set; }
         public DateTime? RefreshTokenExpiryTime { get; set; }
         public bool IsActive { get; set; } = true;
+        public ICollection<IdentityUserRole<string>> UserRoles { get; set; }
     }
 }
