@@ -3,6 +3,7 @@ using CDE.Models;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Graph.Models;
 using Microsoft.Graph.Models.Security;
+using System.Collections;
 using System.Linq;
 
 namespace CDE.Repository
@@ -96,23 +97,6 @@ namespace CDE.Repository
             return true;
         }
 
-
-        //public async Task<User?> CreateUserAsync(User user)
-        //{
-        //    _context.Users.Add(user);
-        //    await _context.SaveChangesAsync();
-        //    return user;
-        //}
-
-        //public async Task<IEnumerable<User>> GetUsersByAreaIdAsync(int areaId)
-        //{
-        //    return await _context.Users.Where(u => u.AreaId == areaId).ToListAsync();
-        //}
-
-        //public async Task<IEnumerable<User>> GetAllUsersAsync()
-        //{
-        //    return await _context.Users.ToListAsync();
-        //}
         public async Task<IEnumerable<Area>> GetAllAreasAsync()
         {
             return await _context.AreaLists.ToListAsync();  

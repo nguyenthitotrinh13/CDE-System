@@ -49,6 +49,7 @@ builder.Services.AddTransient<IUserRepository, UserRepository>();
 builder.Services.AddTransient<IRoleRepository, RoleRepository>();
 builder.Services.AddTransient<IPermissionRepository, PermissionRepository>();
 builder.Services.AddTransient<IAreaRepository, AreaRepository>();
+builder.Services.AddTransient<IDistributorRepository, DistributorRepository>();
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();

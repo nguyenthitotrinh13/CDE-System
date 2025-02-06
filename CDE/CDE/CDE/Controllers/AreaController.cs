@@ -12,7 +12,56 @@ namespace CDE.Controllers
     public class AreaController : ControllerBase
     {
         private readonly IAreaRepository _areaService;
+        private readonly IDistributorRepository _distributorRepository;
 
+        public AreaController(IAreaRepository areaService, IDistributorRepository distributorRepository)
+        {
+            _areaService = areaService;
+            _distributorRepository = distributorRepository;
+        }
+        [HttpGet("distributors")]
+        public async Task<IActionResult> GetDistributorsByArea([FromQuery] string areaName)
+        {
+            if (string.IsNullOrEmpty(areaName))
+            {
+                return BadRequest("Area name is required.");
+            }
+
+            var distributors = await _distributorRepository.GetDistributorsByAreaNameAsync(areaName);
+
+            if (distributors == null || distributors.Count == 0)
+            {
+                return NotFound("No distributors found for the given area.");
+            }
+
+            return Ok(distributors);
+        }
+
+        [HttpDelete("remove-distributor/{distributorId}")]
+        public async Task<IActionResult> RemoveDistributorFromArea(int distributorId)
+        {
+            if (distributorId <= 0)
+            {
+                return BadRequest("Invalid distributor ID.");
+            }
+
+            var success = await _distributorRepository.DeleteDistributorByIdAsync(distributorId);
+
+            if (!success)
+            {
+                return NotFound("Distributor not found.");
+            }
+
+            return NoContent(); // 204 No Content: successfully deleted
+        }
+        [HttpPost("add-distributor")]
+        public async Task<IActionResult> AddDistributorToArea([FromBody] AddDistributorRequest request)
+        {
+            var success = await _distributorRepository.AddDistributorToArea(request);
+            if (!success) return BadRequest("Invalid AreaId or failed to add distributor.");
+
+            return Ok("Distributor added successfully.");
+        }
         [HttpGet("users")]
         public async Task<IActionResult> GetUsers([FromQuery] string search = "")
         {
@@ -52,33 +101,6 @@ namespace CDE.Controllers
             return Ok("User removed successfully.");
         }
 
-        //[HttpPost("create-user")]
-        //public async Task<IActionResult> CreateUser([FromBody] User user)
-        //{
-        //    var newUser = await _areaService.CreateUserAsync(user);
-        //    if (newUser == null) return BadRequest("Failed to create user.");
-
-        //    return CreatedAtAction(nameof(GetUsersByArea), new { areaId = newUser.AreaId }, newUser);
-        //}
-
-        //[HttpGet("users/{areaId}")]
-        //public async Task<IActionResult> GetUsersByArea(int areaId)
-        //{
-        //    var users = await _areaService.GetUsersByAreaIdAsync(areaId);
-        //    return Ok(users);
-        //}
-
-        //[HttpGet("users")]
-        //public async Task<IActionResult> GetAllUsers()
-        //{
-        //    var users = await _areaService.GetAllUsersAsync();
-        //    return Ok(users);
-        //}
-
-        public AreaController(IAreaRepository areaService)
-        {
-            _areaService = areaService;
-        }
         [HttpGet("all")]
         public async Task<IActionResult> GetAllAreas()
         {
@@ -92,8 +114,6 @@ namespace CDE.Controllers
             return Ok(areas);
         }
 
-
-        // GET: api/Area/5
         [HttpGet("{id}")]
         public async Task<IActionResult> GetArea(int id)
         {
@@ -106,7 +126,6 @@ namespace CDE.Controllers
             return Ok(area);
         }
 
-        // POST: api/Area
         [HttpPost]
         public async Task<IActionResult> CreateArea([FromBody] Area area)
         {
@@ -119,7 +138,6 @@ namespace CDE.Controllers
             return CreatedAtAction(nameof(GetArea), new { id = createdArea.AreaCode }, createdArea);
         }
 
-        // DELETE: api/Area/5
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteArea(int id)
         {

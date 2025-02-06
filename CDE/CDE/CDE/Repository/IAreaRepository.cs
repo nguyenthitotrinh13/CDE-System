@@ -7,8 +7,6 @@ namespace CDE.Repository
     {
  
         Task<bool> RemoveUserFromArea(string userId, int areaId);
-        //Task<User?> CreateUserAsync(User user);  
-        //Task<IEnumerable<User>> GetAllUsersAsync(); 
         Task<IEnumerable<UserWithRoles>> GetUsersAsync(string search);
         Task<bool> AssignUserToArea(string userId, int areaId);
         Task<IEnumerable<UserWithRoles>> GetUsersByAreaIdAsync(string areaName);
