@@ -10,36 +10,66 @@ namespace CDE.Models
         [Key]
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public Guid Id { get; set; }
-
-        // FK đến bảng AspNetUsers (IdentityUser)
         [Required]
-        public Guid ActorId { get; set; }
-        [ForeignKey("ActorId")]
-        public virtual IdentityUser Actor { get; set; }  // Navigation Property
+        public string CreatedBy { get; set; } 
 
         [Required]
-        public DateTime VisitDate { get; set; }
+        [DataType(DataType.Date)]
+        [CustomValidation(typeof(VisitPlan), nameof(ValidateVisitDates))]
+        public DateTime VisitStartDate { get; set; }
+
+        public static ValidationResult ValidateVisitDates(DateTime startDate, ValidationContext context)
+        {
+            var now = DateTime.UtcNow;
+            if (startDate < now)
+            {
+                return new ValidationResult("Visit date cannot be in the past.");
+            }
+            return ValidationResult.Success;
+        }
+
+        [Required]
+        public DateTime VisitEndDate { get; set; }
+
+        public DateTime CreatedAt { get; set; } = DateTime.UtcNow.AddHours(7);
 
         [Required]
         [EnumDataType(typeof(VisitTimeEnum))]
         public VisitTimeEnum VisitTime { get; set; }
+        public enum VisitTimeEnum
+        {
+            [Display(Name = "Morning")]
+            Morning,
 
-        // FK đến bảng AspNetUsers (Distributor có thể là một User hoặc một thực thể riêng)
-        [Required]
-        //public Guid DistributorId { get; set; }
-        //[ForeignKey("DistributorId")]
-        //public virtual IdentityUser Distributor { get; set; }  
+            [Display(Name = "Afternoon")]
+            Afternoon,
 
-        public string VisitPurpose { get; set; }
-
-        // FK đến danh sách khách mời
-        public virtual ICollection<VisitGuest> VisitGuests { get; set; } = new List<VisitGuest>();
+            [Display(Name = "Full day")]
+            Full_Day    
+        }
 
         [Required]
         [EnumDataType(typeof(VisitStatusEnum))]
         public VisitStatusEnum Status { get; set; }
+        public enum VisitStatusEnum
+        {
+            [Display(Name = "Not Visit")]
+            NotVisited,
 
-        public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+            [Display(Name = "Visited")]
+            Visited,
 
+            [Display(Name = "Evaluated")]
+            Evaluated
+        }
+        public bool IsEvaluated { get; set; } = false;
+        public DateTime? EvaluatedAt { get; set; }
+        [Required]
+        [StringLength(500)]
+        public string VisitPurpose { get; set; }
+
+        public virtual ICollection<VisitDistributor> VisitDistributors { get; set; } = new List<VisitDistributor>();
+        public virtual ICollection<VisitGuest> VisitGuests { get; set; } = new List<VisitGuest>();
+        public virtual ICollection<VisitTask> Tasks { get; set; } = new List<VisitTask>();
     }
 }
