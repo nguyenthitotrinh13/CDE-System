@@ -1,6 +1,7 @@
 ﻿using CDE.Models;
 using CDE.Repository;
 using Microsoft.AspNetCore.Mvc;
+using Newtonsoft.Json;
 
 // For more information on enabling Web API for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
 
@@ -17,40 +18,44 @@ namespace CDE.Controllers
             _service = service;
         }
 
-        // Get all visit plans
-        [HttpGet]
-        public async Task<IActionResult> GetAllVisitPlans()
-        {
-            var visitPlans = await _service.GetAllVisitPlansAsync();
-            return Ok(visitPlans);
-        }
-
-        // Get visit plan by Id
-        [HttpGet("{id}")]
-        public async Task<IActionResult> GetVisitPlanById(Guid id)
-        {
-            var visitPlan = await _service.GetVisitPlanByIdAsync(id);
-            if (visitPlan == null)
-            {
-                return NotFound();
-            }
-            return Ok(visitPlan);
-        }
-
         [HttpPost]
         public async Task<IActionResult> CreateVisitPlan([FromBody] VisitPlan visitPlan)
         {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+
             if (visitPlan == null)
             {
                 return BadRequest("Dữ liệu không hợp lệ.");
             }
 
-            await _service.CreateVisitPlanAsync(visitPlan);
-            return Ok("Tạo lịch viếng thăm thành công.");
+            try
+            {
+                if (visitPlan.GuestList != null)
+                {
+                    visitPlan.GuestList = JsonConvert.SerializeObject(visitPlan.GuestList.Split(',').ToList());
+                }
+
+                if (visitPlan.DistributorList != null)
+                {
+                    visitPlan.DistributorList = JsonConvert.SerializeObject(visitPlan.DistributorList.Split(',').ToList());
+                }
+
+                await _service.CreateVisitPlanAsync(visitPlan);
+                return Ok(new { message = "Tạo lịch viếng thăm thành công." });
+            }
+            catch (InvalidOperationException ex)
+            {
+                return BadRequest(new { message = ex.Message });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { message = "Có lỗi xảy ra.", error = ex.Message });
+            }
         }
 
-
-        // Update visit plan
         [HttpPut("{id}")]
         public async Task<IActionResult> UpdateVisitPlan(Guid id, [FromBody] VisitPlan visitPlan)
         {

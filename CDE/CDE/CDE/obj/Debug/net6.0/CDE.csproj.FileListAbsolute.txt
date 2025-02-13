@@ -104,3 +104,7 @@ E:\CDE-System\CDE\CDE\CDE\obj\Debug\net6.0\refint\CDE.dll
 E:\CDE-System\CDE\CDE\CDE\obj\Debug\net6.0\CDE.pdb
 E:\CDE-System\CDE\CDE\CDE\obj\Debug\net6.0\CDE.genruntimeconfig.cache
 E:\CDE-System\CDE\CDE\CDE\obj\Debug\net6.0\ref\CDE.dll
+E:\CDE-System\CDE\CDE\CDE\bin\Debug\net6.0\Newtonsoft.Json.dll
+E:\CDE-System\CDE\CDE\CDE\bin\Debug\net6.0\Microsoft.AspNetCore.JsonPatch.dll
+E:\CDE-System\CDE\CDE\CDE\bin\Debug\net6.0\Microsoft.AspNetCore.Mvc.NewtonsoftJson.dll
+E:\CDE-System\CDE\CDE\CDE\bin\Debug\net6.0\Newtonsoft.Json.Bson.dll

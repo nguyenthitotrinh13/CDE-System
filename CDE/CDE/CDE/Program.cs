@@ -8,6 +8,7 @@ using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
 using System.Text;
 using CDE.Repository;
+using Newtonsoft.Json.Converters;
 
 var builder = WebApplication.CreateBuilder(args);
 ConfigurationManager configuration = builder.Configuration;
@@ -51,7 +52,11 @@ builder.Services.AddTransient<IPermissionRepository, PermissionRepository>();
 builder.Services.AddTransient<IAreaRepository, AreaRepository>();
 builder.Services.AddTransient<IDistributorRepository, DistributorRepository>();
 builder.Services.AddTransient<IVisitPlanRepository, VisitPlanRepository>();
-builder.Services.AddControllers();
+builder.Services.AddControllers()
+     .AddNewtonsoftJson(options =>
+     {
+         options.SerializerSettings.Converters.Add(new StringEnumConverter());
+     });
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 

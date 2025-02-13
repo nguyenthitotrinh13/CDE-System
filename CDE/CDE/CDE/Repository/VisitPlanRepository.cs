@@ -1,6 +1,8 @@
 ﻿using CDE.DBContexts;
 using CDE.Models;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Newtonsoft.Json;
 using System;
 using static CDE.Models.VisitPlan;
 
@@ -15,36 +17,19 @@ namespace CDE.Repository
             _context = context;
         }
 
-        public async Task<VisitPlan> GetVisitPlanByIdAsync(Guid id)
-        {
-            return await _context.VisitPlans
-                .Include(v => v.VisitDistributors)
-                .Include(v => v.VisitGuests)
-                .FirstOrDefaultAsync(v => v.Id == id);
-        }
-
-        public async Task<IEnumerable<VisitPlan>> GetAllVisitPlansAsync()
-        {
-            return await _context.VisitPlans
-                .Include(v => v.VisitDistributors)
-                .Include(v => v.VisitGuests)
-                .ToListAsync();
-        }
 
         public async Task CreateVisitPlanAsync(VisitPlan visitPlan)
         {
-            var today = DateTime.UtcNow.Date;
+            var today = TimeZoneInfo.ConvertTimeFromUtc(DateTime.UtcNow, TimeZoneInfo.FindSystemTimeZoneById("SE Asia Standard Time")).Date;
             var existingPlans = await _context.VisitPlans
                 .Where(v => v.CreatedBy == visitPlan.CreatedBy && v.VisitStartDate.Date == today)
                 .ToListAsync();
 
-            // Kiểm tra nếu đã có 2 visit request trong ngày
             if (existingPlans.Count >= 2)
             {
                 throw new InvalidOperationException("Bạn chỉ có thể gửi tối đa 2 yêu cầu viếng thăm trong một ngày.");
             }
 
-            // Kiểm tra nếu đã có yêu cầu buổi sáng hoặc buổi chiều
             bool hasMorningRequest = existingPlans.Any(v => v.VisitTime == VisitPlan.VisitTimeEnum.Morning);
             bool hasAfternoonRequest = existingPlans.Any(v => v.VisitTime == VisitPlan.VisitTimeEnum.Afternoon);
 
@@ -54,7 +39,6 @@ namespace CDE.Repository
                 throw new InvalidOperationException("Bạn không thể gửi 2 yêu cầu vào cùng một khoảng thời gian (sáng hoặc chiều).");
             }
 
-            // Nếu tạo lịch viếng thăm trong ngày hôm nay, kiểm tra khoảng cách 1 giờ
             if (visitPlan.VisitStartDate.Date == today)
             {
                 var lastVisit = existingPlans.OrderByDescending(v => v.VisitEndDate).FirstOrDefault();
@@ -64,35 +48,20 @@ namespace CDE.Repository
                 }
             }
 
-            // Lưu VisitPlan vào cơ sở dữ liệu
+            if (!string.IsNullOrEmpty(visitPlan.GuestList))
+            {
+                visitPlan.GuestList = JsonConvert.SerializeObject(visitPlan.GuestList.Split(',').ToList());
+            }
+
+            if (!string.IsNullOrEmpty(visitPlan.DistributorList))
+            {
+                visitPlan.DistributorList = JsonConvert.SerializeObject(visitPlan.DistributorList.Split(',').ToList());
+            }
+
             _context.VisitPlans.Add(visitPlan);
-            await _context.SaveChangesAsync();  // Lưu VisitPlan trước, lấy ID của nó
-
-            // Lưu các VisitDistributors
-            foreach (var distributorId in visitPlan.VisitDistributors)
-            {
-                var visitDistributor = new VisitDistributor
-                {
-                    VisitPlanId = visitPlan.Id,
-                    DistributorId = distributorId.DistributorId
-                };
-                _context.VisitDistributors.Add(visitDistributor);
-            }
-
-            // Lưu các VisitGuests
-            foreach (var guestId in visitPlan.VisitGuests)
-            {
-                var visitGuest = new VisitGuest
-                {
-                    VisitPlanId = visitPlan.Id,
-                    UserId = guestId.UserId
-                };
-                _context.VisitGuests.Add(visitGuest);
-            }
-
-            // Lưu vào cơ sở dữ liệu
             await _context.SaveChangesAsync();
         }
+
 
         public async Task UpdateVisitPlanAsync(VisitPlan visitPlan)
         {

@@ -2,6 +2,9 @@
 using System.ComponentModel.DataAnnotations;
 using Microsoft.Graph.Models;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore.Storage.ValueConversion.Internal;
+using System.Text.Json.Serialization;
+using Newtonsoft.Json.Converters;
 
 namespace CDE.Models
 {
@@ -34,8 +37,9 @@ namespace CDE.Models
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow.AddHours(7);
 
         [Required]
-        [EnumDataType(typeof(VisitTimeEnum))]
+        [JsonConverter(typeof(StringEnumConverter))]
         public VisitTimeEnum VisitTime { get; set; }
+
         public enum VisitTimeEnum
         {
             [Display(Name = "Morning")]
@@ -68,8 +72,8 @@ namespace CDE.Models
         [StringLength(500)]
         public string VisitPurpose { get; set; }
 
-        public virtual ICollection<VisitDistributor> VisitDistributors { get; set; } = new List<VisitDistributor>();
-        public virtual ICollection<VisitGuest> VisitGuests { get; set; } = new List<VisitGuest>();
+        public string GuestList { get; set; }
+        public string DistributorList { get; set; }
         public virtual ICollection<VisitTask> Tasks { get; set; } = new List<VisitTask>();
     }
 }

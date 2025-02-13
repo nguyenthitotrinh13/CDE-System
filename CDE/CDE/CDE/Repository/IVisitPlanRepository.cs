@@ -4,8 +4,6 @@ namespace CDE.Repository
 {
     public interface IVisitPlanRepository
     {
-        Task<VisitPlan> GetVisitPlanByIdAsync(Guid id);
-        Task<IEnumerable<VisitPlan>> GetAllVisitPlansAsync();
         Task CreateVisitPlanAsync(VisitPlan visitPlan);
         Task UpdateVisitPlanAsync(VisitPlan visitPlan);
         Task DeleteVisitPlanAsync(Guid id);
