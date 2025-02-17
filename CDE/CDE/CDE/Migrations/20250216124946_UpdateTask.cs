@@ -5,23 +5,17 @@ using Microsoft.EntityFrameworkCore.Migrations;
 
 namespace CDE.Migrations
 {
-    public partial class FixForeignKey : Migration
+    public partial class UpdateTask : Migration
     {
         protected override void Up(MigrationBuilder migrationBuilder)
         {
-            //migrationBuilder.DropForeignKey(
-            //    name: "FK_AreaLists_AspNetUsers_UserId",
-            //    table: "AreaLists");
+            migrationBuilder.DropForeignKey(
+                name: "FK_AreaLists_AspNetUsers_UserId",
+                table: "AreaLists");
 
-            //migrationBuilder.DropForeignKey(
-            //    name: "FK_AreaLists_Distributors_DistributorId",
-            //    table: "AreaLists");
-
-            migrationBuilder.AddColumn<string>(
-                name: "ApplicationUserId",
-                table: "AspNetUserRoles",
-                type: "nvarchar(450)",
-                nullable: true);
+            migrationBuilder.DropForeignKey(
+                name: "FK_AreaLists_Distributors_DistributorId",
+                table: "AreaLists");
 
             migrationBuilder.AlterColumn<string>(
                 name: "UserId",
@@ -48,33 +42,30 @@ namespace CDE.Migrations
                 oldType: "int",
                 oldMaxLength: 200);
 
-            migrationBuilder.CreateTable(
-                name: "VisitPlans",
-                columns: table => new
-                {
-                    Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    CreatedBy = table.Column<string>(type: "nvarchar(450)", nullable: false),
-                    VisitStartDate = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    VisitEndDate = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    VisitTime = table.Column<int>(type: "int", nullable: false),
-                    Status = table.Column<int>(type: "int", nullable: false),
-                    IsEvaluated = table.Column<bool>(type: "bit", nullable: false),
-                    EvaluatedAt = table.Column<DateTime>(type: "datetime2", nullable: true),
-                    VisitPurpose = table.Column<string>(type: "nvarchar(500)", maxLength: 500, nullable: false)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_VisitPlans", x => x.Id);
-                    table.ForeignKey(
-                        name: "FK_VisitPlans_AspNetUsers_CreatedBy",
-                        column: x => x.CreatedBy,
-                        principalTable: "AspNetUsers",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Restrict);
-                });
-
-            migrationBuilder.CreateTable(
+            //migrationBuilder.CreateTable(
+            //    name: "VisitPlans",
+            //    columns: table => new
+            //    {
+            //        Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+            //        CreatedBy = table.Column<string>(type: "nvarchar(max)", nullable: false),
+            //        VisitStartDate = table.Column<DateTime>(type: "datetime2", nullable: false),
+            //        VisitEndDate = table.Column<DateTime>(type: "datetime2", nullable: false),
+            //        CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
+            //        VisitTime = table.Column<int>(type: "int", nullable: false),
+            //        Status = table.Column<int>(type: "int", nullable: false),
+            //        IsEvaluated = table.Column<bool>(type: "bit", nullable: false),
+            //        EvaluatedAt = table.Column<DateTime>(type: "datetime2", nullable: true),
+            //        VisitPurpose = table.Column<string>(type: "nvarchar(500)", maxLength: 500, nullable: false),
+            //        GuestList = table.Column<string>(type: "nvarchar(max)", nullable: false),
+            //        DistributorList = table.Column<string>(type: "nvarchar(max)", nullable: false)
+            //    },
+            //    constraints: table =>
+            //    {
+            //        table.PrimaryKey("PK_VisitPlans", x => x.Id);
+            //    });
+            if (!migrationBuilder.Sql("SELECT OBJECT_ID('Tasks')").Equals(DBNull.Value))
+            {
+                migrationBuilder.CreateTable(
                 name: "Tasks",
                 columns: table => new
                 {
@@ -82,77 +73,23 @@ namespace CDE.Migrations
                     Title = table.Column<string>(type: "nvarchar(255)", maxLength: 255, nullable: false),
                     Description = table.Column<string>(type: "nvarchar(1000)", maxLength: 1000, nullable: false),
                     VisitPlanId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    AssigneeId = table.Column<string>(type: "nvarchar(450)", nullable: false),
+                    Assignee = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     StartDate = table.Column<DateTime>(type: "datetime2", nullable: false),
                     EndDate = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    IsCompleted = table.Column<bool>(type: "bit", nullable: false),
                     CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_Tasks", x => x.Id);
-                    table.ForeignKey(
-                        name: "FK_Tasks_AspNetUsers_AssigneeId",
-                        column: x => x.AssigneeId,
-                        principalTable: "AspNetUsers",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Restrict);
-                    table.ForeignKey(
-                        name: "FK_Tasks_VisitPlans_VisitPlanId",
-                        column: x => x.VisitPlanId,
-                        principalTable: "VisitPlans",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Restrict);
                 });
-
-            migrationBuilder.CreateTable(
-                name: "VisitDistributors",
-                columns: table => new
-                {
-                    Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    VisitPlanId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    DistributorId = table.Column<int>(type: "int", nullable: false)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_VisitDistributors", x => x.Id);
-                    table.ForeignKey(
-                        name: "FK_VisitDistributors_Distributors_DistributorId",
-                        column: x => x.DistributorId,
-                        principalTable: "Distributors",
-                        principalColumn: "DistributorId",
-                        onDelete: ReferentialAction.Cascade);
-                    table.ForeignKey(
-                        name: "FK_VisitDistributors_VisitPlans_VisitPlanId",
-                        column: x => x.VisitPlanId,
-                        principalTable: "VisitPlans",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
-                });
-
-            migrationBuilder.CreateTable(
-                name: "VisitGuests",
-                columns: table => new
-                {
-                    Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    VisitPlanId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    UserId = table.Column<string>(type: "nvarchar(450)", nullable: false)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_VisitGuests", x => x.Id);
-                    table.ForeignKey(
-                        name: "FK_VisitGuests_AspNetUsers_UserId",
-                        column: x => x.UserId,
-                        principalTable: "AspNetUsers",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
-                    table.ForeignKey(
-                        name: "FK_VisitGuests_VisitPlans_VisitPlanId",
-                        column: x => x.VisitPlanId,
-                        principalTable: "VisitPlans",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
-                });
+            }
+                //constraints: table =>
+                //{
+                //    table.PrimaryKey("PK_Tasks", x => x.Id);
+                //    table.ForeignKey(
+                //        name: "FK_Tasks_VisitPlans_VisitPlanId",
+                //        column: x => x.VisitPlanId,
+                //        principalTable: "VisitPlans",
+                //        principalColumn: "Id",
+                //        onDelete: ReferentialAction.Restrict);
+                //});
 
             migrationBuilder.CreateTable(
                 name: "TaskAttachments",
@@ -236,11 +173,6 @@ namespace CDE.Migrations
                 });
 
             migrationBuilder.CreateIndex(
-                name: "IX_AspNetUserRoles_ApplicationUserId",
-                table: "AspNetUserRoles",
-                column: "ApplicationUserId");
-
-            migrationBuilder.CreateIndex(
                 name: "IX_TaskAttachments_TaskId",
                 table: "TaskAttachments",
                 column: "TaskId");
@@ -271,39 +203,9 @@ namespace CDE.Migrations
                 column: "TaskId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_Tasks_AssigneeId",
-                table: "Tasks",
-                column: "AssigneeId");
-
-            migrationBuilder.CreateIndex(
                 name: "IX_Tasks_VisitPlanId",
                 table: "Tasks",
                 column: "VisitPlanId");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_VisitDistributors_DistributorId",
-                table: "VisitDistributors",
-                column: "DistributorId");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_VisitDistributors_VisitPlanId",
-                table: "VisitDistributors",
-                column: "VisitPlanId");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_VisitGuests_UserId",
-                table: "VisitGuests",
-                column: "UserId");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_VisitGuests_VisitPlanId",
-                table: "VisitGuests",
-                column: "VisitPlanId");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_VisitPlans_CreatedBy",
-                table: "VisitPlans",
-                column: "CreatedBy");
 
             migrationBuilder.AddForeignKey(
                 name: "FK_AreaLists_AspNetUsers_UserId",
@@ -319,28 +221,17 @@ namespace CDE.Migrations
                 column: "DistributorId",
                 principalTable: "Distributors",
                 principalColumn: "DistributorId");
-
-            migrationBuilder.AddForeignKey(
-                name: "FK_AspNetUserRoles_AspNetUsers_ApplicationUserId",
-                table: "AspNetUserRoles",
-                column: "ApplicationUserId",
-                principalTable: "AspNetUsers",
-                principalColumn: "Id");
         }
 
         protected override void Down(MigrationBuilder migrationBuilder)
         {
-            //migrationBuilder.DropForeignKey(
-            //    name: "FK_AreaLists_AspNetUsers_UserId",
-            //    table: "AreaLists");
-
-            //migrationBuilder.DropForeignKey(
-            //    name: "FK_AreaLists_Distributors_DistributorId",
-            //    table: "AreaLists");
+            migrationBuilder.DropForeignKey(
+                name: "FK_AreaLists_AspNetUsers_UserId",
+                table: "AreaLists");
 
             migrationBuilder.DropForeignKey(
-                name: "FK_AspNetUserRoles_AspNetUsers_ApplicationUserId",
-                table: "AspNetUserRoles");
+                name: "FK_AreaLists_Distributors_DistributorId",
+                table: "AreaLists");
 
             migrationBuilder.DropTable(
                 name: "TaskAttachments");
@@ -352,24 +243,10 @@ namespace CDE.Migrations
                 name: "TaskRatings");
 
             migrationBuilder.DropTable(
-                name: "VisitDistributors");
-
-            migrationBuilder.DropTable(
-                name: "VisitGuests");
-
-            migrationBuilder.DropTable(
                 name: "Tasks");
 
-            migrationBuilder.DropTable(
-                name: "VisitPlans");
-
-            migrationBuilder.DropIndex(
-                name: "IX_AspNetUserRoles_ApplicationUserId",
-                table: "AspNetUserRoles");
-
-            migrationBuilder.DropColumn(
-                name: "ApplicationUserId",
-                table: "AspNetUserRoles");
+            //migrationBuilder.DropTable(
+            //    name: "VisitPlans");
 
             migrationBuilder.AlterColumn<string>(
                 name: "UserId",

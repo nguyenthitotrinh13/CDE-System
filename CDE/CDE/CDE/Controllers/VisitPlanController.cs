@@ -18,6 +18,28 @@ namespace CDE.Controllers
             _service = service;
         }
 
+        [HttpPost("create-task")]
+        public async Task<IActionResult> CreateTask([FromBody] VisitTask task)
+        {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+
+            try
+            {
+                await _service.CreateTaskAsync(task);
+                return Ok(new { message = "Tạo nhiệm vụ thành công.", taskId = task.Id });
+            }
+            catch (InvalidOperationException ex)
+            {
+                return BadRequest(new { message = ex.Message });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { message = "Đã xảy ra lỗi.", error = ex.Message });
+            }
+        }
         [HttpPost]
         public async Task<IActionResult> CreateVisitPlan([FromBody] VisitPlan visitPlan)
         {

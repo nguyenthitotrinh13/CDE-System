@@ -16,7 +16,33 @@ namespace CDE.Repository
         {
             _context = context;
         }
+        public async Task CreateTaskAsync(VisitTask visitTask)
+        {
+            var visitPlan = await _context.VisitPlans
+                .Include(v => v.Tasks)
+                .FirstOrDefaultAsync(v => v.Id == visitTask.VisitPlanId);
 
+            if (visitPlan == null)
+            {
+                throw new InvalidOperationException("Visit Plan không tồn tại.");
+            }
+
+            // Kiểm tra Assignee có thuộc danh sách khách mời không
+            var guestList = visitPlan.GuestList.Split(',').Select(g => g.Trim()).ToList();
+            if (!guestList.Contains(visitTask.Assignee))
+            {
+                throw new InvalidOperationException("Người được giao không nằm trong danh sách khách mời.");
+            }
+
+            // Kiểm tra thời gian hợp lệ
+            if (visitTask.StartDate < visitPlan.VisitStartDate || visitTask.EndDate < visitTask.StartDate)
+            {
+                throw new InvalidOperationException("Ngày bắt đầu hoặc hạn chót không hợp lệ.");
+            }
+
+            _context.VisitTasks.Add(visitTask);
+            await _context.SaveChangesAsync();
+        }
 
         public async Task CreateVisitPlanAsync(VisitPlan visitPlan)
         {

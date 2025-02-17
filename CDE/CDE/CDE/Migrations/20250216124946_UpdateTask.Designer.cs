@@ -12,8 +12,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace CDE.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20250208051339_FixForeignKey")]
-    partial class FixForeignKey
+    [Migration("20250216124946_UpdateTask")]
+    partial class UpdateTask
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
@@ -250,49 +250,6 @@ namespace CDE.Migrations
                     b.ToTable("TaskRatings");
                 });
 
-            modelBuilder.Entity("CDE.Models.VisitDistributor", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<int>("DistributorId")
-                        .HasColumnType("int");
-
-                    b.Property<Guid>("VisitPlanId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("DistributorId");
-
-                    b.HasIndex("VisitPlanId");
-
-                    b.ToTable("VisitDistributors");
-                });
-
-            modelBuilder.Entity("CDE.Models.VisitGuest", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<string>("UserId")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(450)");
-
-                    b.Property<Guid>("VisitPlanId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("UserId");
-
-                    b.HasIndex("VisitPlanId");
-
-                    b.ToTable("VisitGuests");
-                });
-
             modelBuilder.Entity("CDE.Models.VisitPlan", b =>
                 {
                     b.Property<Guid>("Id")
@@ -304,10 +261,18 @@ namespace CDE.Migrations
 
                     b.Property<string>("CreatedBy")
                         .IsRequired()
-                        .HasColumnType("nvarchar(450)");
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("DistributorList")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<DateTime?>("EvaluatedAt")
                         .HasColumnType("datetime2");
+
+                    b.Property<string>("GuestList")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<bool>("IsEvaluated")
                         .HasColumnType("bit");
@@ -331,8 +296,6 @@ namespace CDE.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("CreatedBy");
-
                     b.ToTable("VisitPlans");
                 });
 
@@ -342,9 +305,9 @@ namespace CDE.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uniqueidentifier");
 
-                    b.Property<string>("AssigneeId")
+                    b.Property<string>("Assignee")
                         .IsRequired()
-                        .HasColumnType("nvarchar(450)");
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime2");
@@ -356,6 +319,9 @@ namespace CDE.Migrations
 
                     b.Property<DateTime>("EndDate")
                         .HasColumnType("datetime2");
+
+                    b.Property<bool>("IsCompleted")
+                        .HasColumnType("bit");
 
                     b.Property<DateTime>("StartDate")
                         .HasColumnType("datetime2");
@@ -369,8 +335,6 @@ namespace CDE.Migrations
                         .HasColumnType("uniqueidentifier");
 
                     b.HasKey("Id");
-
-                    b.HasIndex("AssigneeId");
 
                     b.HasIndex("VisitPlanId");
 
@@ -484,12 +448,7 @@ namespace CDE.Migrations
                     b.Property<string>("RoleId")
                         .HasColumnType("nvarchar(450)");
 
-                    b.Property<string>("ApplicationUserId")
-                        .HasColumnType("nvarchar(450)");
-
                     b.HasKey("UserId", "RoleId");
-
-                    b.HasIndex("ApplicationUserId");
 
                     b.HasIndex("RoleId");
 
@@ -586,70 +545,13 @@ namespace CDE.Migrations
                     b.Navigation("Task");
                 });
 
-            modelBuilder.Entity("CDE.Models.VisitDistributor", b =>
-                {
-                    b.HasOne("CDE.Models.Distributor", "Distributor")
-                        .WithMany()
-                        .HasForeignKey("DistributorId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("CDE.Models.VisitPlan", "VisitPlan")
-                        .WithMany("VisitDistributors")
-                        .HasForeignKey("VisitPlanId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Distributor");
-
-                    b.Navigation("VisitPlan");
-                });
-
-            modelBuilder.Entity("CDE.Models.VisitGuest", b =>
-                {
-                    b.HasOne("CDE.Models.ApplicationUser", "User")
-                        .WithMany()
-                        .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("CDE.Models.VisitPlan", "VisitPlan")
-                        .WithMany("VisitGuests")
-                        .HasForeignKey("VisitPlanId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("User");
-
-                    b.Navigation("VisitPlan");
-                });
-
-            modelBuilder.Entity("CDE.Models.VisitPlan", b =>
-                {
-                    b.HasOne("CDE.Models.ApplicationUser", "Creator")
-                        .WithMany()
-                        .HasForeignKey("CreatedBy")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
-                    b.Navigation("Creator");
-                });
-
             modelBuilder.Entity("CDE.Models.VisitTask", b =>
                 {
-                    b.HasOne("CDE.Models.ApplicationUser", "Assignee")
-                        .WithMany()
-                        .HasForeignKey("AssigneeId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
                     b.HasOne("CDE.Models.VisitPlan", "VisitPlan")
                         .WithMany("Tasks")
                         .HasForeignKey("VisitPlanId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
-
-                    b.Navigation("Assignee");
 
                     b.Navigation("VisitPlan");
                 });
@@ -683,10 +585,6 @@ namespace CDE.Migrations
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserRole<string>", b =>
                 {
-                    b.HasOne("CDE.Models.ApplicationUser", null)
-                        .WithMany("UserRoles")
-                        .HasForeignKey("ApplicationUserId");
-
                     b.HasOne("Microsoft.AspNetCore.Identity.IdentityRole", null)
                         .WithMany()
                         .HasForeignKey("RoleId")
@@ -709,18 +607,9 @@ namespace CDE.Migrations
                         .IsRequired();
                 });
 
-            modelBuilder.Entity("CDE.Models.ApplicationUser", b =>
-                {
-                    b.Navigation("UserRoles");
-                });
-
             modelBuilder.Entity("CDE.Models.VisitPlan", b =>
                 {
                     b.Navigation("Tasks");
-
-                    b.Navigation("VisitDistributors");
-
-                    b.Navigation("VisitGuests");
                 });
 
             modelBuilder.Entity("CDE.Models.VisitTask", b =>

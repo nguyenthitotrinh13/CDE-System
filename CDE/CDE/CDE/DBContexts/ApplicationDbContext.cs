@@ -15,7 +15,7 @@ namespace CDE.DBContexts
         public DbSet<Area> AreaLists { get; set; }
         public DbSet<Distributor> Distributors { get; set; }
         public DbSet<VisitPlan> VisitPlans { get; set; }
-        public DbSet<VisitTask> Tasks { get; set; }
+        public DbSet<VisitTask> VisitTasks { get; set; }
         public DbSet<TaskAttachment> TaskAttachments { get; set; }
         public DbSet<TaskComment> TaskComments { get; set; }
         public DbSet<TaskRating> TaskRatings { get; set; }
@@ -50,11 +50,6 @@ namespace CDE.DBContexts
                 .HasForeignKey(t => t.VisitPlanId)
                 .OnDelete(DeleteBehavior.Restrict);
 
-            builder.Entity<VisitTask>()
-                .HasOne(t => t.Assignee)
-                .WithMany()
-                .HasForeignKey(t => t.AssigneeId)
-                .OnDelete(DeleteBehavior.Restrict);
             // Cấu hình quan hệ Task - Attachments
             builder.Entity<VisitTask>()
                 .HasMany(t => t.Attachments)
