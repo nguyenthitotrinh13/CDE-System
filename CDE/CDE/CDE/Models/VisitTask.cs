@@ -27,7 +27,7 @@ namespace CDE.Models
         public VisitPlan? VisitPlan { get; set; }
 
         [Required]
-        public string Assignee { get; set; }
+        public string AssigneeId { get; set; }
 
         [Required]
         public DateTime StartDate { get; set; }  
